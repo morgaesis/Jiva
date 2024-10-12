@@ -4,7 +4,7 @@
     "qdrant_port": "6333",
     "collection_name": "jiva_memories",
     "max_short_term_memory": 100,
-    "vector_size": 3072,
+    "vector_size": 3584,
     "vector_size-example-mistralai-embedding": 1024
   },
   "llm": {

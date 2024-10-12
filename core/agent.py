@@ -53,6 +53,16 @@ class Agent:
 
         self.json_encoder = DateTimeEncoder()
 
+        self.memory.add_to_short_term(
+            {
+                "type": "known_actions",
+                "actions": [
+                    (name, func.__doc__)
+                    for name, func in self.action_manager.actions.items()
+                ],
+            }
+        )
+
         self.logger.info("Jiva Agent initialized successfully")
 
     def run(self):

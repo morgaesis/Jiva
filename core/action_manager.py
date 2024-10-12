@@ -1,11 +1,18 @@
 # core/action_manager.py
 
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, List
 import logging
 from core.ethical_framework import EthicalFramework
 from core.memory import Memory
 from core.llm_interface import LLMInterface
 from actions.action_registry import get_action_registry
+
+
+class Action:
+    def __init__(self, name: str, description: str, parameters: Dict[str, Any]):
+        self.name = name
+        self.description = description
+        self.parameters = parameters
 
 
 class ActionManager:
@@ -31,6 +38,7 @@ class ActionManager:
         # Evaluate the action ethically
         if self.ethical_framework.evaluate_action(action_name, parameters):
             self.logger.info(f"Executing action: {action_name}")
+            self.logger.info(f"Executing action: {action_name} with {parameters}")
             try:
                 # Retrieve context for the action
                 # context = self.memory.get_context_for_task(f"Action: {action_name}")
@@ -63,13 +71,13 @@ class ActionManager:
             self.logger.warning(error_msg)
             return {"error": error_msg}
 
-    def get_available_actions(self) -> Dict[str, Dict[str, Any]]:
+    def get_available_actions(self) -> Dict[str, Action]:
         """Get a dictionary of all available actions with their descriptions and parameters."""
         action_info = {}
         for name, func in self.actions.items():
             doc = func.__doc__ or "No description available."
             params = self._get_function_parameters(func)
-            action_info[name] = {"description": doc, "parameters": params}
+            action_info[name] = Action(name=name, description=doc, parameters=params)
         return action_info
 
     def _get_function_parameters(self, func: Callable) -> Dict[str, str]:

@@ -21,7 +21,7 @@ class Memory:
         self.config = config
         self.llm_interface = llm_interface
         self.short_term_memory: List[Dict[str, Any]] = []
-        self.vector_size = config.get("vector_size", 3072)
+        self.vector_size = config.get("vector_size", 3584)
         self.max_short_term_memory = config.get("max_short_term_memory", 100)
         self.logger = logging.getLogger("Jiva.Memory")
         self.json_encoder = DateTimeEncoder()

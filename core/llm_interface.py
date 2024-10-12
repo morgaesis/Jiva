@@ -47,6 +47,7 @@ class LLMInterface:
     )
     def generate(self, prompt: str) -> str:
         """Generate a response from the LLM."""
+        self.logger.debug(f"Generating response for prompt: {prompt}")
         try:
             return self.provider.generate(prompt)
         except Exception as e:

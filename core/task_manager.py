@@ -32,8 +32,8 @@ class Task:
         priority: int = 1,
         deadline: Optional[datetime] = None,
         parent_id: Optional[str] = None,
-        required_inputs: Dict[str, Any] = None,
-        goal: str = None,
+        required_inputs: Optional[Dict[str, Any]] = None,
+        goal: Optional[str] = None,
     ):
         self.id = str(uuid.uuid4())
         self.description = description
@@ -42,7 +42,7 @@ class Task:
         self.priority = parse_int_or_default(priority)
         self.deadline = deadline
         self.created_at = datetime.now()
-        self.completed_at = None
+        self.completed_at: Optional[datetime] = None
         self.status = "pending"
         self.result = None
         self.parent_id = parent_id
@@ -93,7 +93,7 @@ class TaskManager:
         action_descriptions = []
         for action_name, action_info in available_actions.items():
             # param_desc = action_info['description']
-            action_descriptions.append(f"""- {action_name}\n
+            action_descriptions.append(f"""- {action_name}: {action_info.description}\n
             """)
 
         actions_str = "\n\n".join(action_descriptions)
@@ -106,7 +106,7 @@ class TaskManager:
 
         # Context
         {context}
-        
+
         # Available actions and their parameters
         {actions_str}
         """
@@ -120,9 +120,7 @@ class TaskManager:
 
         return action_names
 
-    def generate_tasks(
-        self, goal: str, context: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def generate_tasks(self, goal: str, context: Dict[str, Any]) -> List[Task]:
         # Get available actions with their descriptions and parameters
         available_actions = self.action_manager.get_available_actions()
 
@@ -135,7 +133,7 @@ class TaskManager:
         action_descriptions = []
         for action_name, action_info in available_actions.items():
             if action_name in relevant_actions or action_name in mandatory_actions:
-                param_desc = action_info["description"]
+                param_desc = action_info.description
                 action_descriptions.append(f"""## {action_name}\n
                 ### Description (docstring)
                 {param_desc}
@@ -173,7 +171,7 @@ class TaskManager:
         The context below is a series of short term memory objects of which the last one is the most recent input
         ## The context items
         {context}
-        
+
         # Available actions and their parameters
         {actions_str}
 
@@ -206,17 +204,20 @@ class TaskManager:
         except Exception as e:
             self.logger.error(f"Error parsing LLM response: {e}")
             return [
-                {
-                    "description": f"Analyze goal: {goal}",
-                    "action": "think",
-                    "parameters": {"prompt": goal},
-                    "required_inputs": [],
-                }
+                Task(
+                    **{
+                        "description": f"Analyze goal: {goal}",
+                        "action": "think",
+                        "parameters": {"prompt": goal},
+                        "required_inputs": [],
+                    }
+                )
             ]
 
     def add_raw_tasks(self, raw_tasks: Dict[str, Any], goal: str) -> List[Task]:
         tasks: List[Task] = []
         last_task_id = None
+        self.logger.debug("Adding raw tasks")
         for raw_task in raw_tasks:
             task = Task(**raw_task)
             task.goal = goal
